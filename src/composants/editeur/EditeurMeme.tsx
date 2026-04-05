@@ -30,7 +30,7 @@ import {
 } from "@/lib/types";
 import { LARGEUR_CANVAS, HAUTEUR_CANVAS } from "@/lib/constantes";
 import type { RefCanvasMeme } from "./CanvasMeme";
-import { cn } from "@/lib/utilitaires";
+import { cn, obtenirIdUtilisateur } from "@/lib/utilitaires";
 
 const CanvasMeme = dynamic(() => import("./CanvasMeme"), { ssr: false });
 
@@ -358,6 +358,7 @@ export default function EditeurMeme({
         method: methode,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          utilisateurId: obtenirIdUtilisateur(),
           titre: titreAuto,
           imageDonnees: donnees,
           texteHaut: null,

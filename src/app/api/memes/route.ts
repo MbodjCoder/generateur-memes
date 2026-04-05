@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/memes — Récupérer tous les mèmes
-export async function GET() {
+// GET /api/memes?uid=xxx — Récupérer les mèmes d'un utilisateur
+export async function GET(requete: NextRequest) {
+  const uid = requete.nextUrl.searchParams.get("uid");
+  if (!uid) {
+    return NextResponse.json([], { status: 200 });
+  }
+
   const memes = await prisma.meme.findMany({
+    where: { utilisateurId: uid },
     orderBy: { dateCreation: "desc" },
     select: {
       id: true,
@@ -22,18 +28,18 @@ export async function GET() {
 // POST /api/memes — Créer un nouveau mème
 export async function POST(requete: NextRequest) {
   const corps = await requete.json();
+  const { titre, imageDonnees, texteHaut, texteBas, utilisateurId } = corps;
 
-  const { titre, imageDonnees, texteHaut, texteBas } = corps;
-
-  if (!titre || !imageDonnees) {
+  if (!titre || !imageDonnees || !utilisateurId) {
     return NextResponse.json(
-      { erreur: "Le titre et l'image sont requis." },
+      { erreur: "Le titre, l'image et l'identifiant utilisateur sont requis." },
       { status: 400 }
     );
   }
 
   const meme = await prisma.meme.create({
     data: {
+      utilisateurId,
       titre,
       imageDonnees,
       texteHaut: texteHaut || null,

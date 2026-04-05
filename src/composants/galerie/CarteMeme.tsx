@@ -63,7 +63,7 @@ export default function CarteMeme({
       transition={{ delay: index * 0.05, duration: 0.3 }}
       onClick={() => surModifier(meme)}
       className={cn(
-        "group relative rounded-2xl overflow-hidden cursor-pointer",
+        "group relative rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer",
         "bg-carte border border-bordure",
         "hover:shadow-xl hover:shadow-accent/10 hover:border-accent/30",
         "transition-all duration-300"
@@ -78,51 +78,53 @@ export default function CarteMeme({
         />
       </div>
 
-      {/* Overlay d'actions au survol */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-        <div className="w-full p-3 flex items-center gap-2">
+      {/* Bouton supprimer — toujours visible */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          surSupprimer(meme.id);
+        }}
+        className="absolute top-2 right-2 p-1.5 sm:p-2 rounded-lg bg-red-500/80 hover:bg-red-600 text-white transition-colors shadow-sm"
+        title="Supprimer"
+      >
+        <Trash2 size={14} />
+      </button>
+
+      {/* Actions supplémentaires au survol (desktop) */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-2 sm:p-3 flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={(e) => {
               e.stopPropagation();
               surModifier(meme);
             }}
-            className="p-2 rounded-lg bg-accent/40 backdrop-blur-sm hover:bg-accent/60 text-white transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-accent/40 backdrop-blur-sm hover:bg-accent/60 text-white transition-colors"
             title="Modifier"
           >
-            <Pencil size={16} />
+            <Pencil size={14} />
           </button>
           <button
             onClick={telecharger}
-            className="p-2 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-colors"
             title="Télécharger"
           >
-            <Download size={16} />
+            <Download size={14} />
           </button>
           <button
             onClick={partager}
-            className="p-2 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-colors"
             title="Partager"
           >
-            <Share2 size={16} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              surSupprimer(meme.id);
-            }}
-            className="p-2 rounded-lg bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 text-white transition-colors ml-auto"
-            title="Supprimer"
-          >
-            <Trash2 size={16} />
+            <Share2 size={14} />
           </button>
         </div>
       </div>
 
       {/* Infos */}
-      <div className="p-3">
-        <h3 className="font-medium text-sm truncate">{meme.titre}</h3>
-        <p className="text-xs text-texte-secondaire flex items-center gap-1 mt-1">
-          <Calendar size={12} />
+      <div className="p-2 sm:p-3">
+        <h3 className="font-medium text-xs sm:text-sm truncate">{meme.titre}</h3>
+        <p className="text-[10px] sm:text-xs text-texte-secondaire flex items-center gap-1 mt-0.5 sm:mt-1">
+          <Calendar size={10} />
           {dateFormatee}
         </p>
       </div>

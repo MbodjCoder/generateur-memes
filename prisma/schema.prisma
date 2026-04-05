@@ -12,10 +12,13 @@ datasource db {
 // Modèle représentant un mème créé par un utilisateur
 model Meme {
   id             String   @id @default(cuid())
+  utilisateurId  String
   titre          String
   imageDonnees   String
   texteHaut      String?
   texteBas       String?
   dateCreation   DateTime @default(now())
   dateMiseAJour  DateTime @updatedAt
+
+  @@index([utilisateurId])
 }

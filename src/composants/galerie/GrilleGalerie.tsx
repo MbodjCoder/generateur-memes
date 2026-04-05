@@ -6,8 +6,9 @@ import { ImageOff, RefreshCw, Loader2, ArrowLeft } from "lucide-react";
 import CarteMeme from "./CarteMeme";
 import EditeurMeme from "@/composants/editeur/EditeurMeme";
 import { MemeAPI } from "@/lib/types";
+import { obtenirIdUtilisateur } from "@/lib/utilitaires";
 
-// Grille affichant tous les mèmes avec édition intégrée
+// Grille affichant les mèmes de l'utilisateur avec édition intégrée
 export default function GrilleGalerie() {
   const [memes, setMemes] = useState<MemeAPI[]>([]);
   const [chargement, setChargement] = useState(true);
@@ -18,7 +19,8 @@ export default function GrilleGalerie() {
     setChargement(true);
     setErreur(null);
     try {
-      const reponse = await fetch("/api/memes");
+      const uid = obtenirIdUtilisateur();
+      const reponse = await fetch(`/api/memes?uid=${uid}`);
       if (!reponse.ok) throw new Error("Erreur");
       setMemes(await reponse.json());
     } catch {
@@ -121,7 +123,7 @@ export default function GrilleGalerie() {
           Actualiser
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {memes.map((meme, index) => (
           <CarteMeme
             key={meme.id}
