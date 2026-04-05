@@ -49,3 +49,5 @@ generer_rapport.py
 ~$*
 
 .vercel
+
+.env*.local

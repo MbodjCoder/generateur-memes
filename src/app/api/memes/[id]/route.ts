@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { obtenirPrisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 // GET /api/memes/:id — Récupérer un mème par son identifiant
 export async function GET(
   _requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const prisma = await obtenirPrisma();
   const { id } = await params;
   const meme = await prisma.meme.findUnique({ where: { id } });
 
@@ -22,7 +21,6 @@ export async function PUT(
   requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const prisma = await obtenirPrisma();
   const { id } = await params;
   const corps = await requete.json();
   const { titre, imageDonnees, texteHaut, texteBas } = corps;
@@ -48,7 +46,6 @@ export async function DELETE(
   _requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const prisma = await obtenirPrisma();
   const { id } = await params;
 
   try {

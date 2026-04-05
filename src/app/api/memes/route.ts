@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { obtenirPrisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 // GET /api/memes — Récupérer tous les mèmes
 export async function GET() {
-  const prisma = await obtenirPrisma();
   const memes = await prisma.meme.findMany({
     orderBy: { dateCreation: "desc" },
     select: {
@@ -22,7 +21,6 @@ export async function GET() {
 
 // POST /api/memes — Créer un nouveau mème
 export async function POST(requete: NextRequest) {
-  const prisma = await obtenirPrisma();
   const corps = await requete.json();
 
   const { titre, imageDonnees, texteHaut, texteBas } = corps;
