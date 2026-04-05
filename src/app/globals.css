@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --carte: #ffffff;
+  --carte-survol: #f1f5f9;
+  --bordure: #e2e8f0;
+  --accent: #0ea5e9;
+  --accent-clair: #e0f2fe;
+  --accent-sombre: #0284c7;
+  --texte-secondaire: #64748b;
+  --danger: #ef4444;
+  --succes: #22c55e;
+}
+
+.dark {
+  --background: #0b1120;
+  --foreground: #e2e8f0;
+  --carte: #1e293b;
+  --carte-survol: #334155;
+  --bordure: #334155;
+  --accent: #38bdf8;
+  --accent-clair: #0c4a6e;
+  --accent-sombre: #7dd3fc;
+  --texte-secondaire: #94a3b8;
+  --danger: #f87171;
+  --succes: #4ade80;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-carte: var(--carte);
+  --color-carte-survol: var(--carte-survol);
+  --color-bordure: var(--bordure);
+  --color-accent: var(--accent);
+  --color-accent-clair: var(--accent-clair);
+  --color-accent-sombre: var(--accent-sombre);
+  --color-texte-secondaire: var(--texte-secondaire);
+  --color-danger: var(--danger);
+  --color-succes: var(--succes);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bordure);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--texte-secondaire);
+}
+
+/* Animation pour les cartes de la galerie */
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animation-apparition {
+  animation: apparition 0.4s ease-out forwards;
 }

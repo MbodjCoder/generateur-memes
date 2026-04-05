@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <!-- Fond -->
+  <rect x="0" y="0" width="600" height="600" fill="#1a1a2e"/>
+
+  <!-- Table / surface -->
+  <rect x="100" y="350" width="400" height="200" rx="10" fill="#4a4a6a"/>
+  <rect x="100" y="350" width="400" height="20" rx="5" fill="#5a5a8a"/>
+
+  <!-- Ombre du bouton -->
+  <ellipse cx="300" cy="310" rx="95" ry="20" fill="rgba(0,0,0,0.3)"/>
+
+  <!-- Base du bouton -->
+  <ellipse cx="300" cy="280" rx="90" ry="18" fill="#8b0000"/>
+
+  <!-- Corps du bouton (cylindre) -->
+  <rect x="210" y="220" width="180" height="60" fill="#cc0000"/>
+
+  <!-- Dome du bouton -->
+  <ellipse cx="300" cy="220" rx="90" ry="30" fill="#ff1a1a"/>
+
+  <!-- Reflet sur le bouton -->
+  <ellipse cx="280" cy="210" rx="40" ry="12" fill="#ff6666" opacity="0.6"/>
+  <ellipse cx="270" cy="205" rx="15" ry="5" fill="white" opacity="0.4"/>
+
+  <!-- Main hesitante -->
+  <g transform="translate(380, 120) rotate(15)">
+    <!-- Paume -->
+    <rect x="0" y="0" width="50" height="60" rx="10" fill="#f4c27f"/>
+    <!-- Doigts -->
+    <rect x="2" y="-30" width="10" height="35" rx="5" fill="#f4c27f"/>
+    <rect x="14" y="-35" width="10" height="40" rx="5" fill="#f4c27f"/>
+    <rect x="26" y="-33" width="10" height="38" rx="5" fill="#f4c27f"/>
+    <rect x="38" y="-28" width="10" height="33" rx="5" fill="#f4c27f"/>
+    <!-- Poignet -->
+    <rect x="10" y="55" width="30" height="30" rx="5" fill="#f4c27f"/>
+  </g>
+
+  <!-- Gouttes de sueur -->
+  <circle cx="420" cy="110" r="4" fill="#5dade2" opacity="0.7"/>
+  <circle cx="435" cy="125" r="3" fill="#5dade2" opacity="0.5"/>
+
+  <!-- Zone texte en haut -->
+  <rect x="50" y="30" width="500" height="60" rx="8" fill="rgba(0,0,0,0.4)"/>
+  <text x="300" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#ccc">Votre texte ici</text>
+
+  <!-- Label du template -->
+  <rect x="180" y="530" width="240" height="45" rx="8" fill="rgba(0,0,0,0.6)"/>
+  <text x="300" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">BOUTON MEME</text>
+</svg>

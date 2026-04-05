@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <!-- Zone du haut : "Non" -->
+  <rect x="0" y="0" width="600" height="300" fill="#2a2a2a"/>
+  <rect x="0" y="0" width="300" height="300" fill="#e74c3c"/>
+  <text x="150" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white">NON</text>
+  <!-- Icone main qui repousse -->
+  <line x1="110" y1="180" x2="190" y2="240" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <line x1="190" y1="180" x2="110" y2="240" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <!-- Zone texte haut -->
+  <rect x="300" y="0" width="300" height="300" fill="#3d3d3d"/>
+  <text x="450" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#999">Texte option</text>
+  <text x="450" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#999">rejetee</text>
+
+  <!-- Ligne separatrice -->
+  <line x1="0" y1="300" x2="600" y2="300" stroke="#555" stroke-width="2"/>
+
+  <!-- Zone du bas : "Oui" -->
+  <rect x="0" y="300" width="300" height="300" fill="#27ae60"/>
+  <text x="150" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white">OUI</text>
+  <!-- Icone pouce leve -->
+  <circle cx="150" cy="500" r="25" fill="none" stroke="white" stroke-width="4"/>
+  <line x1="150" y1="475" x2="150" y2="460" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <!-- Zone texte bas -->
+  <rect x="300" y="300" width="300" height="300" fill="#4a4a4a"/>
+  <text x="450" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#ccc">Texte option</text>
+  <text x="450" y="465" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#ccc">preferee</text>
+
+  <!-- Ligne separatrice verticale -->
+  <line x1="300" y1="0" x2="300" y2="600" stroke="#555" stroke-width="2"/>
+
+  <!-- Label du template -->
+  <rect x="180" y="275" width="240" height="50" rx="8" fill="#1a1a1a" opacity="0.85"/>
+  <text x="300" y="307" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">DRAKE MEME</text>
+</svg>

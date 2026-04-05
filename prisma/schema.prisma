@@ -1,0 +1,21 @@
+// Schéma de la base de données pour le générateur de mèmes
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Modèle représentant un mème créé par un utilisateur
+model Meme {
+  id          String   @id @default(cuid())
+  titre       String
+  imageDonnees String  // Image finale encodée en base64
+  texteHaut   String?
+  texteBas    String?
+  dateCreation DateTime @default(now())
+  dateMiseAJour DateTime @updatedAt
+}
