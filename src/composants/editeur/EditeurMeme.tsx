@@ -12,6 +12,7 @@ import {
   Clipboard,
   Trash2,
   Layers,
+  RotateCcw,
 } from "lucide-react";
 import ZoneUpload from "./ZoneUpload";
 import ControlesTexte from "./ControlesTexte";
@@ -208,7 +209,6 @@ export default function EditeurMeme({
 
   useEffect(() => {
     const gererTouche = (e: KeyboardEvent) => {
-      // Ignorer si on tape dans un input
       const cible = e.target as HTMLElement;
       if (
         cible.tagName === "INPUT" ||
@@ -217,25 +217,21 @@ export default function EditeurMeme({
       )
         return;
 
-      // Ctrl+C : copier
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && idSelectionne) {
         e.preventDefault();
         copierElement(idSelectionne);
       }
 
-      // Ctrl+V : coller
       if ((e.ctrlKey || e.metaKey) && e.key === "v") {
         e.preventDefault();
         collerElement();
       }
 
-      // Suppr / Backspace : supprimer
       if ((e.key === "Delete" || e.key === "Backspace") && idSelectionne) {
         e.preventDefault();
         supprimerElement(idSelectionne);
       }
 
-      // Échap : désélectionner
       if (e.key === "Escape") {
         setIdSelectionne(null);
         setMenuContextuel(null);
@@ -260,7 +256,6 @@ export default function EditeurMeme({
     if (!menuContextuel) return [];
     const { idElement } = menuContextuel;
 
-    // Menu sur un élément
     if (idElement) {
       return [
         {
@@ -294,7 +289,6 @@ export default function EditeurMeme({
       ];
     }
 
-    // Menu sur le fond (espace vide)
     return [
       {
         label: "Ajouter un texte",
@@ -426,7 +420,7 @@ export default function EditeurMeme({
   // --- Rendu ---
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
       {/* Input caché pour ajout d'image */}
       <input
         ref={refInputImage}
@@ -441,7 +435,7 @@ export default function EditeurMeme({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl bg-accent text-white font-medium shadow-lg"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl bg-accent text-white font-medium shadow-lg text-sm"
         >
           {messageNotification}
         </motion.div>
@@ -451,13 +445,13 @@ export default function EditeurMeme({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
+        className="text-center mb-4 sm:mb-8"
       >
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">
           {idMemeEdite ? "Modifier votre " : "Créez votre "}
           <span className="text-accent">mème</span>
         </h1>
-        <p className="text-texte-secondaire text-sm">
+        <p className="text-texte-secondaire text-xs sm:text-sm hidden sm:block">
           {idMemeEdite
             ? "Modifiez et sauvegardez votre création"
             : "Ctrl+C / Ctrl+V • Clic droit pour les options • Double-clic pour éditer"}
@@ -466,7 +460,7 @@ export default function EditeurMeme({
 
       {/* Zone d'upload si pas d'image de fond */}
       {!imageFond && (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
           <ZoneUpload surSelection={setImageFond} />
           <SelecteurTemplate surSelection={setImageFond} />
         </div>
@@ -474,9 +468,34 @@ export default function EditeurMeme({
 
       {/* Éditeur */}
       {imageFond && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
-          {/* Colonne gauche : Canvas + Barre d'outils */}
-          <div className="space-y-4 relative">
+        <div className="flex flex-col lg:grid lg:grid-cols-[1fr_340px] gap-4 sm:gap-6">
+          {/* Colonne gauche : Boutons d'action + Canvas + Barre d'outils */}
+          <div className="space-y-3 sm:space-y-4 relative">
+            {/* Boutons Texte / Image / Réinitialiser — AU-DESSUS du canvas */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={ajouterTexte}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-accent text-white font-medium text-xs sm:text-sm hover:bg-accent-sombre transition-colors"
+              >
+                <Type size={15} />
+                Texte
+              </button>
+              <button
+                onClick={() => refInputImage.current?.click()}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-carte border border-bordure font-medium text-xs sm:text-sm hover:bg-carte-survol transition-colors"
+              >
+                <ImagePlus size={15} />
+                Image
+              </button>
+              <button
+                onClick={reinitialiser}
+                className="ml-auto p-2 sm:p-2.5 rounded-xl bg-carte border border-bordure hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors"
+                title="Réinitialiser"
+              >
+                <RotateCcw size={16} />
+              </button>
+            </div>
+
             <CanvasMeme
               ref={refCanvas}
               imageFond={imageFond}
@@ -505,37 +524,18 @@ export default function EditeurMeme({
               surExporter={exporterMeme}
               surSauvegarder={sauvegarderMeme}
               surPartager={partagerMeme}
-              surReinitialiser={reinitialiser}
               aUneImage={!!imageFond}
               enSauvegarde={enSauvegarde}
             />
           </div>
 
-          {/* Colonne droite : Outils + Contrôles */}
+          {/* Colonne droite : Contrôles (sur mobile = en dessous) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-4"
+            className="space-y-3 sm:space-y-4"
           >
-            {/* Boutons d'ajout */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={ajouterTexte}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent-sombre transition-colors"
-              >
-                <Type size={16} />
-                Texte
-              </button>
-              <button
-                onClick={() => refInputImage.current?.click()}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-carte border border-bordure font-medium text-sm hover:bg-carte-survol transition-colors"
-              >
-                <ImagePlus size={16} />
-                Image
-              </button>
-            </div>
-
             {/* Contrôles de l'élément sélectionné */}
             {elementSelectionne?.type === "texte" && (
               <ControlesTexte
@@ -554,10 +554,10 @@ export default function EditeurMeme({
 
             {/* Info si rien de sélectionné */}
             {!elementSelectionne && elements.length === 0 && (
-              <div className="text-center py-6 text-texte-secondaire text-sm">
-                <Type size={28} className="mx-auto mb-2 opacity-40" />
+              <div className="text-center py-4 sm:py-6 text-texte-secondaire text-xs sm:text-sm">
+                <Type size={24} className="mx-auto mb-2 opacity-40" />
                 <p>Ajoutez du texte ou une image</p>
-                <p className="text-xs mt-1 opacity-70">
+                <p className="text-xs mt-1 opacity-70 hidden sm:block">
                   Clic droit sur le canvas pour plus d&apos;options
                 </p>
               </div>
@@ -565,12 +565,12 @@ export default function EditeurMeme({
 
             {/* Liste des couches */}
             {elements.length > 0 && (
-              <div className="p-3 rounded-xl bg-carte border border-bordure">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-carte border border-bordure">
                 <h3 className="text-xs font-semibold text-texte-secondaire mb-2 flex items-center gap-1.5">
                   <Layers size={13} />
                   Couches ({elements.length})
                 </h3>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
+                <div className="space-y-1 max-h-36 sm:max-h-48 overflow-y-auto">
                   {[...elements]
                     .sort((a, b) => b.ordre - a.ordre)
                     .map((el) => (
@@ -578,7 +578,7 @@ export default function EditeurMeme({
                         key={el.id}
                         onClick={() => setIdSelectionne(el.id)}
                         className={cn(
-                          "flex items-center gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer text-xs transition-colors",
+                          "flex items-center gap-2 px-2 sm:px-2.5 py-1.5 rounded-lg cursor-pointer text-xs transition-colors",
                           idSelectionne === el.id
                             ? "bg-accent/10 text-accent border border-accent/30"
                             : "hover:bg-carte-survol"

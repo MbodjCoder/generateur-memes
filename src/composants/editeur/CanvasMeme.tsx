@@ -41,7 +41,7 @@ export interface RefCanvasMeme {
   obtenirDimensions: () => { largeur: number; hauteur: number };
 }
 
-// Canvas Konva professionnel : multi-couches, images + textes, menu contextuel
+// Canvas Konva professionnel : multi-couches, images + textes, responsive
 const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
   function CanvasMeme(
     {
@@ -73,6 +73,22 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
       hauteur: number;
     } | null>(null);
     const refTextarea = useRef<HTMLTextAreaElement>(null);
+    const [echelle, setEchelle] = useState(1);
+
+    // Calcul de l'échelle responsive
+    useEffect(() => {
+      const calculerEchelle = () => {
+        if (!refConteneur.current) return;
+        const largeurConteneur = refConteneur.current.clientWidth;
+        const largeurCible = fondCharge ? dimensionsFond.largeur : LARGEUR_CANVAS;
+        const nouvelleEchelle = Math.min(1, largeurConteneur / largeurCible);
+        setEchelle(nouvelleEchelle);
+      };
+
+      calculerEchelle();
+      window.addEventListener("resize", calculerEchelle);
+      return () => window.removeEventListener("resize", calculerEchelle);
+    }, [fondCharge, dimensionsFond.largeur]);
 
     // Charger l'image de fond
     useEffect(() => {
@@ -138,7 +154,7 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
     const largeurCanvas = fondCharge ? dimensionsFond.largeur : LARGEUR_CANVAS;
     const hauteurCanvas = fondCharge ? dimensionsFond.hauteur : HAUTEUR_CANVAS;
 
-    // Export
+    // Export (toujours à la résolution originale)
     useImperativeHandle(ref, () => ({
       exporterImage: (format: "png" | "jpeg", qualite = 0.92) => {
         if (!refStage.current) return null;
@@ -150,7 +166,7 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
         return refStage.current.toDataURL({
           mimeType: format === "jpeg" ? "image/jpeg" : "image/png",
           quality: qualite,
-          pixelRatio: 2,
+          pixelRatio: 2 / echelle,
         });
       },
       obtenirDimensions: () => ({ largeur: largeurCanvas, hauteur: hauteurCanvas }),
@@ -172,13 +188,13 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
         noeud.getLayer()?.batchDraw();
         setEditionInline({
           id,
-          x: rect.x,
-          y: rect.y,
-          largeur: Math.max(rect.width, 150),
-          hauteur: Math.max(rect.height, 40),
+          x: rect.x * echelle,
+          y: rect.y * echelle,
+          largeur: Math.max(rect.width * echelle, 120),
+          hauteur: Math.max(rect.height * echelle, 36),
         });
       },
-      []
+      [echelle]
     );
 
     const fermerEditionInline = useCallback(() => {
@@ -190,14 +206,14 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
     }, [editionInline]);
 
     // Clic sur le fond
-    const surClicFond = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    const surClicFond = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
       if (e.target === e.target.getStage() || e.target.name() === "fond") {
         fermerEditionInline();
         surSelectionElement(null);
       }
     };
 
-    // Menu contextuel sur le fond ou un élément
+    // Menu contextuel sur le fond
     const gererMenuContextuel = useCallback(
       (e: React.MouseEvent) => {
         e.preventDefault();
@@ -221,7 +237,7 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
         top: `${editionInline.y}px`,
         width: `${editionInline.largeur}px`,
         minHeight: `${editionInline.hauteur}px`,
-        fontSize: `${el.taille * el.echelleY}px`,
+        fontSize: `${el.taille * el.echelleY * echelle}px`,
         fontFamily: el.police,
         fontWeight: el.gras ? "bold" : "normal",
         fontStyle: el.italique ? "italic" : "normal",
@@ -243,7 +259,7 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
             : undefined,
         textShadow: el.ombre ? "2px 2px 4px rgba(0,0,0,0.7)" : undefined,
       };
-    }, [editionInline, elements]);
+    }, [editionInline, elements, echelle]);
 
     // Tri des éléments par ordre (couches)
     const elementsTries = [...elements].sort((a, b) => a.ordre - b.ordre);
@@ -253,6 +269,9 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
         ref={refConteneur}
         className="relative rounded-xl overflow-hidden border border-bordure bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
         onContextMenu={gererMenuContextuel}
+        style={{
+          touchAction: "none",
+        }}
       >
         {/* Fond en damier */}
         <div
@@ -264,56 +283,172 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
           }}
         />
 
-        <Stage
-          ref={refStage}
-          width={largeurCanvas}
-          height={hauteurCanvas}
-          onMouseDown={surClicFond}
-          className="relative z-10"
+        <div
+          style={{
+            transform: `scale(${echelle})`,
+            transformOrigin: "top left",
+            width: `${largeurCanvas}px`,
+            height: `${hauteurCanvas}px`,
+          }}
         >
-          <Layer>
-            {/* Image de fond */}
-            {fondCharge && (
-              <KonvaImage
-                name="fond"
-                image={fondCharge}
-                width={largeurCanvas}
-                height={hauteurCanvas}
-              />
-            )}
-            {!fondCharge && (
-              <Rect
-                name="fond"
-                width={largeurCanvas}
-                height={hauteurCanvas}
-                fill="#374151"
-              />
-            )}
+          <Stage
+            ref={refStage}
+            width={largeurCanvas}
+            height={hauteurCanvas}
+            onMouseDown={surClicFond}
+            onTouchStart={surClicFond}
+            className="relative z-10"
+          >
+            <Layer>
+              {/* Image de fond */}
+              {fondCharge && (
+                <KonvaImage
+                  name="fond"
+                  image={fondCharge}
+                  width={largeurCanvas}
+                  height={hauteurCanvas}
+                />
+              )}
+              {!fondCharge && (
+                <Rect
+                  name="fond"
+                  width={largeurCanvas}
+                  height={hauteurCanvas}
+                  fill="#374151"
+                />
+              )}
 
-            {/* Éléments triés par ordre (couches) */}
-            {elementsTries.map((el) => {
-              if (el.type === "image") {
-                const imgChargee = imagesChargees.get(el.id);
-                if (!imgChargee) return null;
+              {/* Éléments triés par ordre (couches) */}
+              {elementsTries.map((el) => {
+                if (el.type === "image") {
+                  const imgChargee = imagesChargees.get(el.id);
+                  if (!imgChargee) return null;
 
+                  return (
+                    <Group
+                      key={el.id}
+                      ref={(noeud) => {
+                        if (noeud) refsNoeuds.current.set(el.id, noeud);
+                        else refsNoeuds.current.delete(el.id);
+                      }}
+                      x={el.x}
+                      y={el.y}
+                      width={el.largeur}
+                      height={el.hauteur}
+                      rotation={el.rotation}
+                      scaleX={el.echelleX * (el.inverserX ? -1 : 1)}
+                      scaleY={el.echelleY * (el.inverserY ? -1 : 1)}
+                      opacity={el.opacite}
+                      draggable={!el.verrouille}
+                      onClick={() => surSelectionElement(el.id)}
+                      onTap={() => surSelectionElement(el.id)}
+                      onContextMenu={(e) => {
+                        e.evt.preventDefault();
+                        surSelectionElement(el.id);
+                        const conteneur = refConteneur.current;
+                        if (conteneur) {
+                          const rect = conteneur.getBoundingClientRect();
+                          surMenuContextuel(
+                            e.evt.clientX - rect.left,
+                            e.evt.clientY - rect.top,
+                            el.id
+                          );
+                        }
+                      }}
+                      onDragEnd={(e) => {
+                        surMiseAJourElement(el.id, {
+                          x: e.target.x(),
+                          y: e.target.y(),
+                        });
+                      }}
+                      onTransformEnd={() => {
+                        const noeud = refsNoeuds.current.get(el.id);
+                        if (!noeud) return;
+                        surMiseAJourElement(el.id, {
+                          x: noeud.x(),
+                          y: noeud.y(),
+                          rotation: noeud.rotation(),
+                          echelleX: Math.abs(noeud.scaleX()),
+                          echelleY: Math.abs(noeud.scaleY()),
+                          largeur: (noeud as Konva.Group).width(),
+                          hauteur: (noeud as Konva.Group).height(),
+                        });
+                      }}
+                    >
+                      {el.bordureRayon > 0 ? (
+                        <Group
+                          clipFunc={(ctx) => {
+                            const r = el.bordureRayon;
+                            const w = el.largeur;
+                            const h = el.hauteur;
+                            ctx.beginPath();
+                            ctx.moveTo(r, 0);
+                            ctx.lineTo(w - r, 0);
+                            ctx.quadraticCurveTo(w, 0, w, r);
+                            ctx.lineTo(w, h - r);
+                            ctx.quadraticCurveTo(w, h, w - r, h);
+                            ctx.lineTo(r, h);
+                            ctx.quadraticCurveTo(0, h, 0, h - r);
+                            ctx.lineTo(0, r);
+                            ctx.quadraticCurveTo(0, 0, r, 0);
+                            ctx.closePath();
+                          }}
+                        >
+                          <KonvaImage
+                            image={imgChargee}
+                            width={el.largeur}
+                            height={el.hauteur}
+                          />
+                        </Group>
+                      ) : (
+                        <KonvaImage
+                          image={imgChargee}
+                          width={el.largeur}
+                          height={el.hauteur}
+                        />
+                      )}
+                    </Group>
+                  );
+                }
+
+                // Élément texte
                 return (
-                  <Group
+                  <Text
                     key={el.id}
                     ref={(noeud) => {
                       if (noeud) refsNoeuds.current.set(el.id, noeud);
                       else refsNoeuds.current.delete(el.id);
                     }}
+                    text={el.contenu.toUpperCase()}
                     x={el.x}
                     y={el.y}
                     width={el.largeur}
-                    height={el.hauteur}
+                    fontSize={el.taille}
+                    fontFamily={el.police}
+                    fontStyle={construireStyleTexte(el)}
+                    fill={el.couleur}
+                    stroke={el.couleurContour}
+                    strokeWidth={el.epaisseurContour}
                     rotation={el.rotation}
-                    scaleX={el.echelleX * (el.inverserX ? -1 : 1)}
-                    scaleY={el.echelleY * (el.inverserY ? -1 : 1)}
+                    scaleX={el.echelleX}
+                    scaleY={el.echelleY}
                     opacity={el.opacite}
+                    shadowColor={el.ombre ? "rgba(0,0,0,0.7)" : "transparent"}
+                    shadowBlur={el.ombre ? 4 : 0}
+                    shadowOffsetX={el.ombre ? 2 : 0}
+                    shadowOffsetY={el.ombre ? 2 : 0}
+                    align="center"
                     draggable={!el.verrouille}
                     onClick={() => surSelectionElement(el.id)}
                     onTap={() => surSelectionElement(el.id)}
+                    onDblClick={() => {
+                      const noeud = refsNoeuds.current.get(el.id);
+                      if (noeud) ouvrirEditionInline(el.id, noeud);
+                    }}
+                    onDblTap={() => {
+                      const noeud = refsNoeuds.current.get(el.id);
+                      if (noeud) ouvrirEditionInline(el.id, noeud);
+                    }}
                     onContextMenu={(e) => {
                       e.evt.preventDefault();
                       surSelectionElement(el.id);
@@ -340,150 +475,58 @@ const CanvasMeme = forwardRef<RefCanvasMeme, PropsCanvasMeme>(
                         x: noeud.x(),
                         y: noeud.y(),
                         rotation: noeud.rotation(),
-                        echelleX: Math.abs(noeud.scaleX()),
-                        echelleY: Math.abs(noeud.scaleY()),
-                        largeur: (noeud as Konva.Group).width(),
-                        hauteur: (noeud as Konva.Group).height(),
+                        echelleX: noeud.scaleX(),
+                        echelleY: noeud.scaleY(),
+                        largeur: noeud.width(),
                       });
                     }}
-                  >
-                    {el.bordureRayon > 0 ? (
-                      <Group
-                        clipFunc={(ctx) => {
-                          const r = el.bordureRayon;
-                          const w = el.largeur;
-                          const h = el.hauteur;
-                          ctx.beginPath();
-                          ctx.moveTo(r, 0);
-                          ctx.lineTo(w - r, 0);
-                          ctx.quadraticCurveTo(w, 0, w, r);
-                          ctx.lineTo(w, h - r);
-                          ctx.quadraticCurveTo(w, h, w - r, h);
-                          ctx.lineTo(r, h);
-                          ctx.quadraticCurveTo(0, h, 0, h - r);
-                          ctx.lineTo(0, r);
-                          ctx.quadraticCurveTo(0, 0, r, 0);
-                          ctx.closePath();
-                        }}
-                      >
-                        <KonvaImage
-                          image={imgChargee}
-                          width={el.largeur}
-                          height={el.hauteur}
-                        />
-                      </Group>
-                    ) : (
-                      <KonvaImage
-                        image={imgChargee}
-                        width={el.largeur}
-                        height={el.hauteur}
-                      />
-                    )}
-                  </Group>
+                  />
                 );
-              }
-
-              // Élément texte
-              return (
-                <Text
-                  key={el.id}
-                  ref={(noeud) => {
-                    if (noeud) refsNoeuds.current.set(el.id, noeud);
-                    else refsNoeuds.current.delete(el.id);
-                  }}
-                  text={el.contenu.toUpperCase()}
-                  x={el.x}
-                  y={el.y}
-                  width={el.largeur}
-                  fontSize={el.taille}
-                  fontFamily={el.police}
-                  fontStyle={construireStyleTexte(el)}
-                  fill={el.couleur}
-                  stroke={el.couleurContour}
-                  strokeWidth={el.epaisseurContour}
-                  rotation={el.rotation}
-                  scaleX={el.echelleX}
-                  scaleY={el.echelleY}
-                  opacity={el.opacite}
-                  shadowColor={el.ombre ? "rgba(0,0,0,0.7)" : "transparent"}
-                  shadowBlur={el.ombre ? 4 : 0}
-                  shadowOffsetX={el.ombre ? 2 : 0}
-                  shadowOffsetY={el.ombre ? 2 : 0}
-                  align="center"
-                  draggable={!el.verrouille}
-                  onClick={() => surSelectionElement(el.id)}
-                  onTap={() => surSelectionElement(el.id)}
-                  onDblClick={() => {
-                    const noeud = refsNoeuds.current.get(el.id);
-                    if (noeud) ouvrirEditionInline(el.id, noeud);
-                  }}
-                  onDblTap={() => {
-                    const noeud = refsNoeuds.current.get(el.id);
-                    if (noeud) ouvrirEditionInline(el.id, noeud);
-                  }}
-                  onContextMenu={(e) => {
-                    e.evt.preventDefault();
-                    surSelectionElement(el.id);
-                    const conteneur = refConteneur.current;
-                    if (conteneur) {
-                      const rect = conteneur.getBoundingClientRect();
-                      surMenuContextuel(
-                        e.evt.clientX - rect.left,
-                        e.evt.clientY - rect.top,
-                        el.id
-                      );
-                    }
-                  }}
-                  onDragEnd={(e) => {
-                    surMiseAJourElement(el.id, {
-                      x: e.target.x(),
-                      y: e.target.y(),
-                    });
-                  }}
-                  onTransformEnd={() => {
-                    const noeud = refsNoeuds.current.get(el.id);
-                    if (!noeud) return;
-                    surMiseAJourElement(el.id, {
-                      x: noeud.x(),
-                      y: noeud.y(),
-                      rotation: noeud.rotation(),
-                      echelleX: noeud.scaleX(),
-                      echelleY: noeud.scaleY(),
-                      largeur: noeud.width(),
-                    });
-                  }}
-                />
-              );
-            })}
-
-            {/* Transformateur */}
-            <Transformer
-              ref={refTransformateur}
-              rotateEnabled
-              enabledAnchors={[
-                "top-left",
-                "top-center",
-                "top-right",
-                "middle-left",
-                "middle-right",
-                "bottom-left",
-                "bottom-center",
-                "bottom-right",
-              ]}
-              borderStroke="#0ea5e9"
-              anchorStroke="#0ea5e9"
-              anchorFill="#ffffff"
-              anchorSize={10}
-              anchorCornerRadius={2}
-              rotateAnchorOffset={25}
-              boundBoxFunc={(_, nouvelle) => ({
-                ...nouvelle,
-                width: Math.max(20, nouvelle.width),
-                height: Math.max(20, nouvelle.height),
               })}
-            />
-          </Layer>
-        </Stage>
+
+              {/* Transformateur */}
+              <Transformer
+                ref={refTransformateur}
+                rotateEnabled
+                enabledAnchors={[
+                  "top-left",
+                  "top-center",
+                  "top-right",
+                  "middle-left",
+                  "middle-right",
+                  "bottom-left",
+                  "bottom-center",
+                  "bottom-right",
+                ]}
+                borderStroke="#0ea5e9"
+                anchorStroke="#0ea5e9"
+                anchorFill="#ffffff"
+                anchorSize={echelle < 0.7 ? 14 : 10}
+                anchorCornerRadius={2}
+                rotateAnchorOffset={echelle < 0.7 ? 30 : 25}
+                boundBoxFunc={(_, nouvelle) => ({
+                  ...nouvelle,
+                  width: Math.max(20, nouvelle.width),
+                  height: Math.max(20, nouvelle.height),
+                })}
+              />
+            </Layer>
+          </Stage>
+        </div>
+
+        {/* Conteneur dimensionné pour correspondre à l'échelle */}
+        {echelle < 1 && (
+          <div
+            style={{
+              width: `${largeurCanvas * echelle}px`,
+              height: `${hauteurCanvas * echelle}px`,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              pointerEvents: "none",
+            }}
+          />
+        )}
 
         {/* Textarea d'édition inline */}
         {editionInline && (
